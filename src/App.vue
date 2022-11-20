@@ -4,23 +4,31 @@ import { store } from './data/store';
 import AppHeader from './components/AppHeader.vue'
 import AppSearch from './components/AppSearch.vue'
 import CharacterList from './components/CharacterList.vue'
+import ResultSearch from './components/ResultSearch.vue';
   
 export default {
   name: 'App',
   data() {
     store
  },
-  components: { AppHeader, AppSearch, CharacterList },
+  components: { AppHeader, AppSearch, CharacterList, ResultSearch },
   methods: {
     getCharacters() {
       store.isLoaded = false;
-      axios.get(store.apiUrl)
+      axios.get(store.apiUrl, {
+        params: {
+          name: store.characterToSearch,
+          status: store.statusToSearch
+        }
+      })
       .then(result => {
-        store.characterListData = result.data
+        store.characterListData = result.data.results
         store.isLoaded = true;
       })
-      .catch(error => {
-        console.log(error)
+        .catch(error => {
+          store.characterListData = [];
+          store.isLoaded = true;
+          console.log(error);
       })
     }
   },
@@ -33,8 +41,9 @@ export default {
 <template>
   <AppHeader title="Rick & Morty App" />
   <main>
-    <AppSearch />
+    <AppSearch @startSearch="getCharacters()"/>
     <CharacterList />
+    <ResultSearch />
   </main>
 </template>
 
